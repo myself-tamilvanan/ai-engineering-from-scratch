@@ -1,4 +1,4 @@
-FROM nvidia/cuda:12.4.1-devel-ubuntu22.04
+FROM ubuntu:24.04
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV PYTHONUNBUFFERED=1
@@ -23,15 +23,16 @@ RUN curl -sSL https://raw.githubusercontent.com/pypa/get-pip/3b73145063be545b649
     && rm /tmp/get-pip.py \
     && update-alternatives --install /usr/bin/pip pip /usr/local/bin/pip3.12 1
 
-RUN python -m pip install --no-cache-dir --upgrade pip setuptools wheel
+RUN python -m pip install --no-cache-dir --break-system-packages --upgrade pip setuptools wheel
 
-RUN python -m pip install --no-cache-dir \
-    torch==2.6.0+cu124 \
-    torchvision==0.21.0+cu124 \
-    torchaudio==2.6.0+cu124 \
-    --index-url https://download.pytorch.org/whl/cu124
+# CPU-only torch build — Docker on Apple Silicon runs a Linux VM with no
+# Metal/MPS GPU passthrough, so a CUDA image/build cannot work here.
+RUN python -m pip install --no-cache-dir --break-system-packages \
+    torch==2.6.0 \
+    torchvision==0.21.0 \
+    torchaudio==2.6.0
 
-RUN python -m pip install --no-cache-dir \
+RUN python -m pip install --no-cache-dir --break-system-packages \
     numpy \
     pandas \
     scikit-learn \
